@@ -8,17 +8,28 @@ from handlers import (
 from models import AddressBook
 from storage import delete_data, load_data, save_data, save_notes, load_notes
 import colorama
+import pycountry
 from colorama import Fore
 from prompt_toolkit import prompt, HTML
 from prompt_toolkit.completion import NestedCompleter
 from demo_data import populate_demo_data
 
+
+
 def build_completer(book, notes):
+    countries_list = set()
+    for c in pycountry.countries:
+        countries_list.add(c.name.capitalize())
+        if getattr(c, 'official_name', None):
+            countries_list.add(c.official_name.capitalize())
+
 # Підказки для телефонів, email, дня народження та нотаток
     phone_hint = {"<phone 10 digits>": None}
     email_hint = {"<email>": None}
     birthday_hint = {"<DD.MM.YYYY>": None}
     note_hint = {"<text>": None}
+    birthdays_hint = {"<3-30 days>": None}
+    country_hints = {country: None for country in sorted(countries_list)}
 
     contacts_with_existing_phones = {}
     contacts_with_existing_emails = {}
@@ -44,7 +55,7 @@ def build_completer(book, notes):
     contacts_with_phone = {name: phone_hint for name in book_keys}
     contacts_with_email = {name: email_hint for name in book_keys}
     contacts_with_birthday = {name: birthday_hint for name in book_keys}
-    contacts_with_address = {name: None for name in book_keys}
+    contacts_with_address = {name: country_hints for name in book_keys}
     contacts_no_hints = {name: None for name in book_keys}
     
     note_completer = {}
@@ -73,7 +84,7 @@ def build_completer(book, notes):
             "create-demodata": None,
             "search": None,
             "all": None,
-            "birthdays": None,
+            "birthdays": birthdays_hint,
             "hello": None,
             "help": None,
             "exit": None,
@@ -138,6 +149,7 @@ def main():
             print(show_all(book))
         elif command == "add-birthday":
             print(add_birthday(args, book))
+            need_update_completer = True
         elif command == "show-birthday":
             print(show_birthday(args, book))
         elif command == "add-email":

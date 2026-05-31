@@ -2,3 +2,5 @@ colorama==0.4.6
 prompt_toolkit==3.0.52
 tabulate==0.10.0
 wcwidth==0.7.0
+pip==26.1.1
+pycounytry==26.2.16

@@ -170,7 +170,15 @@ def show_birthday(args, book: AddressBook):
 # Показує дні народження на наступному тижні
 @error_handler
 def birthdays(args, book: AddressBook):
+    days = 7
     upcoming = book.get_upcoming_birthdays()
+
+    if args:
+        try:
+            days = int(args[0])
+        except ValueError:
+            return Fore.YELLOW + "Please input number 0f days before birthday between 3 and 30."
+    upcoming = book.get_upcoming_birthdays(days) 
 
     if not upcoming:
         return Fore.YELLOW + "No upcoming birthdays."
@@ -340,7 +348,7 @@ def show_help():
         ["search <query>", "Searches contacts by name or phone."],
         ["add-birthday <name> <DD.MM.YYYY>", "Adds a birthday to a contact."],
         ["show-birthday <name>", "Shows a contact's birthday."],
-        ["birthdays", "Shows upcoming birthdays in the next 7 days."],
+        ["birthdays <3-30 days>", "Shows upcoming birthdays in the next inputed days."],
         ["add-note <text>", "Adds a new note."],
         ["change-note <id> <text>", "Updates an existing note."],
         ["delete-note <id>", "Deletes a note."],

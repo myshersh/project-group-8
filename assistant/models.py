@@ -1,6 +1,6 @@
 import re
+import pycountry
 from collections import UserDict, UserList
-import re
 from collections import UserDict, UserList
 from datetime import datetime, timedelta
 from colorama import Fore
@@ -20,7 +20,7 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value):
         if not value.isdigit() or len(value) != 10:
-            raise ValueError("Phone number must contain exactly 10 digits.")
+            raise ValueError(Fore.YELLOW + "Phone number must contain exactly 10 digits.")
         super().__init__(value)
 
 # Клас для зберігання дати народження.
@@ -29,19 +29,41 @@ class Birthday(Field):
         try:
             self.value = datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise ValueError(Fore.RED + "Invalid date format. Use DD.MM.YYYY")
 
 class Email(Field):
     def __init__(self, value):
         if not re.match(r"[^@]+@[^@]+\.[^@]+", value):
-            raise ValueError("Invalid email format.")
+            raise ValueError(Fore.RED + "Invalid email format.")
         super().__init__(value)
 
 class Address(Field):
+    COUNTRIES = {c.name.lower() for c in pycountry.countries} | \
+                {getattr(c, 'official_name', '').lower() for c in pycountry.countries if getattr(c, 'official_name', None)}
+
     def __init__(self, value):
-        if not re.search(r"\b\d{5}\b$", value.strip()):
-            raise ValueError("Invalid US address format. Must end with a 5-digit ZIP code.")
-        super().__init__(value)
+        if not isinstance(value, str):
+            raise ValueError(Fore.YELLOW + "Address must be a string.")
+            
+        clean_value = value.strip()
+
+        if len(clean_value.split()) < 4:
+            raise ValueError(Fore.RED + "Invalid address format. Must contain at least 4 words.")
+        address_lower = clean_value.lower()
+
+        has_valid_country = False
+        for country in self.COUNTRIES:
+            if not country:
+                continue
+            # Паттерн проверяет, что адрес начинается со страны, и после неё идёт граница слова (\b)
+            if re.match(rf"^{re.escape(country)}\b", address_lower):
+                has_valid_country = True
+                break
+
+        if not has_valid_country:
+            raise ValueError(Fore.YELLOW + "Address must start with a valid country name.")
+            
+        super().__init__(clean_value)
 
 # Клас для зберігання інформації про контакт, включно з іменем та списком телефонів. 
 # Містить методі маніпуляцій з записами, в класі задане поле name та атрибут phones
@@ -49,10 +71,10 @@ class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
-        self.birthday = None
         self.emails = []
-        self.address = None
-
+        self.birthday = None
+        self.address = None 
+                
     def add_birthday(self, birthday_str):
         self.birthday = Birthday(birthday_str)
 
@@ -191,7 +213,9 @@ class AddressBook(UserDict):
 
     # HW07 Додаємо метод який для контактів адресної книги повертає список користувачів, 
     # яких потрібно привітати по днях на наступному тижні.
-    def get_upcoming_birthdays(self):
+    def get_upcoming_birthdays(self, days=7):
+        if not (3 <= days <= 30):
+            raise ValueError(Fore.YELLOW + "Number of days before birthday can be between 3 and 30.")
         today = datetime.today().date()
         upcoming = []
 
@@ -215,7 +239,7 @@ class AddressBook(UserDict):
 
             days_until = (birthday_this_year - today).days
 
-            if 0 <= days_until <= 7:
+            if 0 <= days_until <= days:
                 weekday = birthday_this_year.weekday()
                 if weekday == 5:
                     congratulation_date = birthday_this_year + timedelta(days=2)
