@@ -132,8 +132,8 @@ class AddressBook(UserDict):
         return results
 
     # HW07 Додаємо метод який для контактів адресної книги повертає список користувачів, 
-    # яких потрібно привітати по днях на наступному тижні.
-    def get_upcoming_birthdays(self):
+    # яких потрібно привітати по днях на вказаний період.
+    def get_upcoming_birthdays(self, days=7):
         today = datetime.today().date()
         upcoming = []
 
@@ -157,7 +157,7 @@ class AddressBook(UserDict):
 
             days_until = (birthday_this_year - today).days
 
-            if 0 <= days_until <= 7:
+            if 0 <= days_until <= days:
                 weekday = birthday_this_year.weekday()
                 if weekday == 5:
                     congratulation_date = birthday_this_year + timedelta(days=2)

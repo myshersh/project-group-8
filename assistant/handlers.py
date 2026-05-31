@@ -165,13 +165,20 @@ def show_birthday(args, book: AddressBook):
     
     return record.birthday.value.strftime('%d.%m.%Y')
 
-# Показує дні народження на наступному тижні
+# Показує дні народження на задану кількість днів (за замовчуванням 7)
 @error_handler
 def birthdays(args, book: AddressBook):
-    upcoming = book.get_upcoming_birthdays()
+    days = 7
+    if args:
+        try:
+            days = int(args[0])
+        except ValueError:
+            return Fore.RED + "Error: Please provide a valid number of days."
+
+    upcoming = book.get_upcoming_birthdays(days)
 
     if not upcoming:
-        return Fore.YELLOW + "No upcoming birthdays."
+        return Fore.YELLOW + f"No upcoming birthdays in the next {days} days."
     
     table = []
     for item in upcoming:
@@ -308,7 +315,7 @@ def show_help():
         ["search <query>", "Searches contacts by name or phone."],
         ["add-birthday <name> <DD.MM.YYYY>", "Adds a birthday to a contact."],
         ["show-birthday <name>", "Shows a contact's birthday."],
-        ["birthdays", "Shows upcoming birthdays in the next 7 days."],
+        ["birthdays [days]", "Shows upcoming birthdays in the specified number of days (default 7)."],
         ["add-note <text>", "Adds a new note."],
         ["change-note <id> <text>", "Updates an existing note."],
         ["delete-note <id>", "Deletes a note."],
