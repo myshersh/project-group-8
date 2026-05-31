@@ -73,7 +73,7 @@ The application features an interactive and smart command-line prompt powered by
 ### Birthdays
 - `add-birthday <name> <DD.MM.YYYY>`: Adds a date of birth to a specific contact.
 - `show-birthday <name>`: Shows the date of birth for the specified contact.
-- `birthdays`: Displays a table of all contacts who have birthdays occurring within the next 7 days, including the exact recommended congratulation date.
+- `birthdays [days]`: Displays a table of all contacts who have birthdays occurring within the next `days` days (default is 7 days), including the exact recommended congratulation date.
 
 ### Notes Management
 - `add-note <text>`: Creates a new text note.
@@ -144,6 +144,7 @@ You can check a specific person's birthday, or see who has upcoming birthdays wi
 ```text
 Enter a command: show-birthday John
 Enter a command: birthdays
+Enter a command: birthdays 14
 ```
 
 ### 3. Adding & Updating Contacts
